@@ -68,7 +68,7 @@ namespace PracticeWebApp.Controllers
         public IActionResult AddBook(Books book) {
             string json = JsonConvert.SerializeObject(book);
             var httpContent = new StringContent(json, Encoding.UTF8, "application/json");
-            var httpResponse = client.PostAsync("api/books", httpContent);
+            var httpResponse = client.PostAsync("api/books/"+Statics.libraryId.ToString(), httpContent);
             return RedirectToAction("ListBooks", new libId { id = Statics.libraryId });
         }
 

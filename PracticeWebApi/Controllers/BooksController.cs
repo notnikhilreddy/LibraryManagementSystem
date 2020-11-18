@@ -46,9 +46,9 @@ namespace PracticeWebApi.Controllers
         // To protect from overposting attacks, enable the specific properties you want to bind to, for
         // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
 
-      
+
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutBooks(int id, [FromBody]Books book)
+        public async Task<IActionResult> PutBooks(int id, [FromBody] Books book)
         {
             if (id != book.BookId)
             {
@@ -79,15 +79,15 @@ namespace PracticeWebApi.Controllers
         // POST: api/Books
         // To protect from overposting attacks, enable the specific properties you want to bind to, for
         // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
-        [HttpPost]
-        public async Task<ActionResult<Books>> PostBooks([FromBody]Books books)
+        [HttpPost("{id}")]
+        public async Task<ActionResult<Books>> PostBooks(int id, [FromBody]Books books)
         {
             if (ModelState.IsValid)
             {
                 _context.Books.Add(books);
                 await _context.SaveChangesAsync();
 
-                _context.BookLibraryAssociation.Add(new BookLibraryAssociation { BookId = books.BookId, LibraryId = 1, IsAvailable = true, IsCheckedOut = false});
+                _context.BookLibraryAssociation.Add(new BookLibraryAssociation { BookId = books.BookId, LibraryId = id, IsAvailable = true, IsCheckedOut = false});
                 await _context.SaveChangesAsync();
 
                 return CreatedAtAction("GetBooks", new { id = books.BookId }, books);
