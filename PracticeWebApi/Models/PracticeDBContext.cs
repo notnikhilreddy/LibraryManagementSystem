@@ -21,6 +21,7 @@ namespace PracticeWebApi.Models
         public virtual DbSet<Roles> Roles { get; set; }
         public virtual DbSet<UserBookAssociation> UserBookAssociation { get; set; }
         public virtual DbSet<Users> Users { get; set; }
+        public virtual DbSet<Users> BookWithStatus { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

@@ -1,13 +1,13 @@
-﻿@model IEnumerable<PracticeWebApi.Models.Books>
+﻿@model IEnumerable<PracticeWebApi.Models.BookWithStatus>
 
 @{
     ViewData["Title"] = "ListBooks";
 }
 
-<h1>Admin</h1>
+<h1>ListBooks</h1>
 
 <p>
-    @Html.ActionLink("Add New Book", "AddBook", "Admin")
+    <a asp-action="Create">Create New</a>
 </p>
 <table class="table">
     <thead>
@@ -24,33 +24,38 @@
             <th>
                 @Html.DisplayNameFor(model => model.Genre)
             </th>
+            <th>
+                @Html.DisplayNameFor(model => model.isAvailable)
+            </th>
             <th></th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var item in Model)
-        {
-            <tr>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Title)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Author)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Price)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Genre)
-                </td>
-                <td>
-                    <a asp-action="Edit" asp-route-id="@item.BookId">Edit</a> |
-                    <a asp-action="Details" asp-route-id="@item.BookId">Details</a> |
-                    <a asp-action="Delete" asp-route-id="@item.BookId">Delete</a>
-                </td>
-            </tr>
-
-        }
-        
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Title)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Author)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Price)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Genre)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.isAvailable)
+            </td>
+            <td>
+                @if(@item.isAvailable) {
+                @Html.ActionLink("Mark Unavailable", "ChangeAvailability", "Admin", new { id = item.BookId, isAvailable = false })
+                } else {
+                @Html.ActionLink("Mark Available", "ChangeAvailability", "Admin", new { id = item.BookId, isAvailable = true })
+                }
+            </td>
+        </tr>
+}
     </tbody>
 </table>

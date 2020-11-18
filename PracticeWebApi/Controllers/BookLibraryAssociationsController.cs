@@ -87,10 +87,17 @@ namespace PracticeWebApi.Controllers
             return booksInLibrary;
         }
 
-        // PUT: api/BookLibraryAssociations/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for
-        // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
-        [HttpPut("{id}")]
+        [HttpGet("getAvailability/{id}")]
+        public async Task<ActionResult<bool>> GetAvailability(int id)
+        {
+            var bla = _context.BookLibraryAssociation.FirstOrDefault(i => i.BookId == id);
+            return bla.IsAvailable;
+        }
+
+            // PUT: api/BookLibraryAssociations/5
+            // To protect from overposting attacks, enable the specific properties you want to bind to, for
+            // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
+            [HttpPut("{id}")]
         public async Task<IActionResult> PutBookLibraryAssociation(int id, [FromBody]BookLibraryAssociation bookLibraryAssociation)
         {
             if (id != bookLibraryAssociation.BookLibraryAsscId)
@@ -137,6 +144,7 @@ namespace PracticeWebApi.Controllers
             }
             return Ok(true);
         }
+        
 
 
         // POST: api/BookLibraryAssociations
