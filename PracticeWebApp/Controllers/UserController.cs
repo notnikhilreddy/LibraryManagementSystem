@@ -7,19 +7,18 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyModel;
 using PracticeWebApi.Models;
-using Books = PracticeWebApi.Models.Books;
 using Newtonsoft.Json;
 using System.Text;
+using System.ComponentModel.Design;
 
 namespace PracticeWebApp.Controllers
 {
-    public class AdminController : Controller
+    public class UserController : Controller
     {
         private HttpClient client = new HttpClient();
         //public static int libraryId;
-        public AdminController()
+        public UserController()
         {
             var httpClientHandler = new HttpClientHandler { Proxy = WebRequest.GetSystemWebProxy() };
             client = new HttpClient(httpClientHandler);
@@ -28,66 +27,59 @@ namespace PracticeWebApp.Controllers
             new MediaTypeWithQualityHeaderValue("application/json"));
         }
 
-        public class libId
+        public class UserId
         {
             public int id { get; set; }
         }
         // GET: HomeController1
-        public IActionResult ListBooks(libId json)
+        public IActionResult ListBooks(UserId json)
         {
-            if (json.id == 0)
-            {
-                json.id = Statics.libraryId;
-            }
-            else
-            {
-                Statics.libraryId = json.id;
-            }
+            Statics.userId = json.id;
             HttpResponseMessage response = client.
-                     GetAsync("api/booklibraryassociations/library/" + json.id.ToString()).Result;
+                     GetAsync("api/booklibraryassociations/checkablebooks").Result;
             List<Books> data = response.Content.
                          ReadAsAsync<List<Books>>().Result;
-            List<bool> avails = new List<bool>();
-            List <BookWithStatus> bws = new List<BookWithStatus>();
-            foreach(var book in data)
-            {
-                HttpResponseMessage response2 = client.
-                     GetAsync("api/booklibraryassociations/getAvailability/" + book.BookId.ToString()).Result;
-                bool data2 = response2.Content.
-                         ReadAsAsync<bool>().Result;
-                avails.Add(data2);
-            }
-            for(int i=0; i < data.Count; i++)
-            {
-                bws.Add(new BookWithStatus { BookId = data[i].BookId, Title = data[i].Title, Author = data[i].Author, Price = data[i].Price, Genre = data[i].Genre, isAvailable = avails[i]});
-            }
-            
-
-            return View(bws);
+            return View(data);
         }
 
-        public ActionResult AddBook()
+        public IActionResult ListMyCheckouts()
+        {
+            HttpResponseMessage response = client.
+                    GetAsync("api/userbookassociations/mycheckouts/"+Statics.userId.ToString()).Result;
+            List<BookWithDuedate> data = response.Content.
+                         ReadAsAsync<List<BookWithDuedate>>().Result;
+            return View(data);
+        }
+
+        public class BookId
+        {
+            public int bookId { get; set; }
+        }
+        public class CheckoutBook
+        {
+            public int bookId { get; set; }
+            public int userId { get; set; }
+        }
+        public IActionResult Checkout(BookId bId)
+        {
+            string json = JsonConvert.SerializeObject(new CheckoutBook { bookId = bId.bookId, userId = Statics.userId });
+            var httpContent = new StringContent(json, Encoding.UTF8, "application/json");
+            var httpResponse = client.PostAsync("api/booklibraryassociations/checkout", httpContent);
+            return RedirectToAction("ListBooks", "User", new UserId { id = Statics.userId});
+        }
+
+        public IActionResult Return(BookId bId)
+        {
+            string json = JsonConvert.SerializeObject(bId);
+            var httpContent = new StringContent(json, Encoding.UTF8, "application/json");
+            var httpResponse = client.PostAsync("api/booklibraryassociations/return", httpContent);
+            return RedirectToAction("ListMyCheckouts", "User");
+        }
+        // GET: HomeController1
+        public ActionResult Index()
         {
             return View();
         }
-
-        [HttpPost]
-        public IActionResult AddBook(Books book) {
-            string json = JsonConvert.SerializeObject(book);
-            var httpContent = new StringContent(json, Encoding.UTF8, "application/json");
-            var httpResponse = client.PostAsync("api/books/"+Statics.libraryId.ToString(), httpContent);
-            return RedirectToAction("ListBooks", new libId { id = Statics.libraryId });
-        }
-
-
-        public IActionResult ChangeAvailability(BookAvailability bookAvailability)
-        {
-            string json = JsonConvert.SerializeObject(bookAvailability);
-            var httpContent = new StringContent(json, Encoding.UTF8, "application/json");
-            var httpResponse = client.PutAsync("api/booklibraryassociations/update", httpContent);
-            return RedirectToAction("ListBooks", new libId { id = Statics.libraryId });
-        }
-
 
         // GET: HomeController1/Details/5
         public ActionResult Details(int id)

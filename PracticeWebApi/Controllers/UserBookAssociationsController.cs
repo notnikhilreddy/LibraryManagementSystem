@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualBasic;
 using PracticeWebApi.Models;
 
 namespace PracticeWebApi.Controllers
@@ -46,14 +47,17 @@ namespace PracticeWebApi.Controllers
         {
             public int userId { get; set; }
         }
-        [HttpGet("mycheckouts")]
-        public async Task<ActionResult<UserBookAssociation>> GetMyCheckouts([FromBody] UserId json)
+        [HttpGet("mycheckouts/{id}")]
+        public async Task<ActionResult<List<BookWithDuedate>>> GetMyCheckouts(int id)
         {
+            List<BookWithDuedate> bwdd = new List<BookWithDuedate>();
             List<int> blaIds = new List<int>();
+
             foreach (var row in _context.UserBookAssociation) {
-                if(row.UserId == json.userId)
+                if(row.UserId == id)
                 {
                     blaIds.Add((int)row.BookLibraryAsscId);
+                    
                 }
             }
 
@@ -75,7 +79,15 @@ namespace PracticeWebApi.Controllers
                 }
             }
 
-            return Ok(books);
+            foreach (Books book in books)
+            {
+                int blaId = _context.BookLibraryAssociation.FirstOrDefault(i => i.BookId == book.BookId).BookLibraryAsscId;
+                DateTime due = (DateTime)_context.UserBookAssociation.FirstOrDefault(i => i.BookLibraryAsscId == blaId).DueDate;
+                bwdd.Add(new BookWithDuedate { BookId = book.BookId, Title = book.Title, Author = book.Author, Price = book.Price, Genre = book.Genre, DueDate = due});
+            }
+            bwdd.OrderBy(i => i.DueDate);
+
+            return Ok(bwdd);
         }
 
         // PUT: api/UserBookAssociations/5
@@ -128,7 +140,7 @@ namespace PracticeWebApi.Controllers
             public int id { get; set; }
         }
         // DELETE: api/UserBookAssociations/5
-        [HttpDelete("{id}")]
+        [HttpDelete("delete")]
         public async Task<ActionResult<UserBookAssociation>> DeleteUserBookAssociation([FromBody] BookId json)
         {
             var userBookAssociation = await _context.UserBookAssociation.FindAsync(json.id);
@@ -142,6 +154,8 @@ namespace PracticeWebApi.Controllers
 
             return userBookAssociation;
         }
+
+
 
         private bool UserBookAssociationExists(int id)
         {

@@ -50,7 +50,7 @@ namespace PracticeWebApp
             {
                 endpoints.MapControllerRoute(
                     name: "default",
-                    pattern: "{controller=Home}/{action=User}/{id?}");
+                    pattern: "{controller=Home}/{action=Admin}/{id?}");
             });
         }
     }

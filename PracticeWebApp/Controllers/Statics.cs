@@ -9,5 +9,6 @@ namespace PracticeWebApp.Controllers
     public static class Statics
     {
         public static int libraryId { get; set; } = 1;
+        public static int userId { get; set; } = 1;
     }
 }

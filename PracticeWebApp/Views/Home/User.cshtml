@@ -1,6 +1,39 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model IEnumerable<PracticeWebApi.Models.Users>
+
 @{
+    ViewData["Title"] = "Users";
 }
-<h1> User Page</h1>
+
+<h1>User</h1>
+
+<p>
+    <a asp-action="AddUser">Add New User</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.LocationId)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.RoleId)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.LocationId)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.RoleId)
+            </td>
+            <td>
+                @Html.ActionLink("Select", "ListBooks", "User", new { id = item.UserId })
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

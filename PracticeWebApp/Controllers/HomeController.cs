@@ -5,10 +5,12 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyModel;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using PracticeWebApi.Models;
 using PracticeWebApp.Models;
 using Library = PracticeWebApi.Models.Library;
@@ -52,8 +54,33 @@ namespace PracticeWebApp.Controllers
 
         public IActionResult User()
         {
-            return View();
+            HttpResponseMessage response = client.
+                     GetAsync("api/users").Result;
+            List<PracticeWebApi.Models.Users> data = response.Content.
+                         ReadAsAsync<List<PracticeWebApi.Models.Users>>().Result;
+            return View(data);
         }
+
+        public class userId
+        {
+            public int id { get; set; }
+        }
+
+        public IActionResult AddUser()
+        {
+            return View("AddUser");
+        }
+
+        [HttpPost]
+        public IActionResult AddUser(Users user)
+        {
+            string json = JsonConvert.SerializeObject(user);
+            var httpContent = new StringContent(json, Encoding.UTF8, "application/json");
+            var httpResponse = client.PostAsync("api/users", httpContent);
+            return RedirectToAction("User");
+        }
+
+
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()

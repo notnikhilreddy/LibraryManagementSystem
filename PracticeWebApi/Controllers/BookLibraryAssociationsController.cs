@@ -48,7 +48,7 @@ namespace PracticeWebApi.Controllers
             List<int> bookIds = new List<int>();
             foreach (var row in _context.BookLibraryAssociation)
             {
-                if (row.IsCheckedOut == false)
+                if (row.IsAvailable == true && row.IsCheckedOut == false)
                 {
                     bookIds.Add((int)row.BookId);
                 }
@@ -159,14 +159,14 @@ namespace PracticeWebApi.Controllers
             return CreatedAtAction("GetBookLibraryAssociation", new { id = bookLibraryAssociation.BookLibraryAsscId }, bookLibraryAssociation);
         }
 
-        public class checkoutBook
+        public class CheckoutBook
         {
             public int bookId { get; set; }
             public int userId { get; set; }
         }
 
         [HttpPost("checkout")]
-        public ActionResult<bool> PostCheckoutBook([FromBody] checkoutBook json)
+        public ActionResult<bool> PostCheckoutBook([FromBody] CheckoutBook json)
         {
             var bookLibraryAssc = _context.BookLibraryAssociation.FirstOrDefault(x => x.BookId == json.bookId);
 
@@ -174,7 +174,7 @@ namespace PracticeWebApi.Controllers
             {
                 bookLibraryAssc.IsCheckedOut = true;
                 int blaId = bookLibraryAssc.BookLibraryAsscId;
-                DateTime dueDate = DateTime.Today.AddMonths(3);
+                DateTime dueDate = DateTime.Now.AddMonths(3);
                 _context.UserBookAssociation.Add(new UserBookAssociation { UserId = json.userId, BookLibraryAsscId = blaId, DueDate = dueDate });
                 _context.SaveChangesAsync();
             } else
@@ -184,23 +184,29 @@ namespace PracticeWebApi.Controllers
             return Ok(true);
         }
 
-        public class returnBook
+        public class ReturnBook
         {
             public int bookId { get; set; }
-            //public int userId { get; set; }
         }
 
         [HttpPost("return")]
-        public ActionResult<bool> PostReturnBook([FromBody] returnBook json)
+        public ActionResult<bool> PostReturnBook([FromBody] ReturnBook json)
         {
             var bookLibraryAssc = _context.BookLibraryAssociation.FirstOrDefault(x => x.BookId == json.bookId);
 
             if (bookLibraryAssc!=null && bookLibraryAssc.IsCheckedOut == true)
             {
                 bookLibraryAssc.IsCheckedOut = false;
-                int blaId = bookLibraryAssc.BookLibraryAsscId;
+                //int blaId = bookLibraryAssc.BookLibraryAsscId;
                 //DateTime dueDate = DateTime.Today.AddMonths(3);
-                //_context.UserBookAssociation.Add(new UserBookAssociation { UserId = userId, BookLibraryAsscId = blaId, DueDate = dueDate });
+                foreach (var row in _context.UserBookAssociation)
+                {
+                    if (row.BookLibraryAsscId == bookLibraryAssc.BookLibraryAsscId)
+                    {
+                        _context.UserBookAssociation.Remove(row);
+                    }
+                }
+                //_context.UserBookAssociation.Remove(uba);
                 _context.SaveChangesAsync();
             }
             else
