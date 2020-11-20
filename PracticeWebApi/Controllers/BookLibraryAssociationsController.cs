@@ -61,8 +61,9 @@ namespace PracticeWebApi.Controllers
                     books.Add(row);
                 }
             }
+            List<Books> sortedList = books.OrderBy(p => p.Title).ToList();
 
-            return books;
+            return sortedList;
         }
 
         [HttpGet("library/{id}")]
@@ -84,7 +85,8 @@ namespace PracticeWebApi.Controllers
                     booksInLibrary.Add(book);
                 }
             }
-            return booksInLibrary;
+            List<Books> sortedList = booksInLibrary.OrderBy(p => p.Title).ToList();
+            return sortedList;
         }
 
         [HttpGet("getAvailability/{id}")]
@@ -166,7 +168,7 @@ namespace PracticeWebApi.Controllers
         }
 
         [HttpPost("checkout")]
-        public ActionResult<bool> PostCheckoutBook([FromBody] CheckoutBook json)
+        public async Task<ActionResult<bool>> PostCheckoutBook([FromBody] CheckoutBook json)
         {
             var bookLibraryAssc = _context.BookLibraryAssociation.FirstOrDefault(x => x.BookId == json.bookId);
 
@@ -176,7 +178,7 @@ namespace PracticeWebApi.Controllers
                 int blaId = bookLibraryAssc.BookLibraryAsscId;
                 DateTime dueDate = DateTime.Now.AddMonths(3);
                 _context.UserBookAssociation.Add(new UserBookAssociation { UserId = json.userId, BookLibraryAsscId = blaId, DueDate = dueDate });
-                _context.SaveChangesAsync();
+                await _context.SaveChangesAsync();
             } else
             {
                 return BadRequest(false);
@@ -190,7 +192,7 @@ namespace PracticeWebApi.Controllers
         }
 
         [HttpPost("return")]
-        public ActionResult<bool> PostReturnBook([FromBody] ReturnBook json)
+        public async Task<ActionResult<bool>> PostReturnBook([FromBody] ReturnBook json)
         {
             var bookLibraryAssc = _context.BookLibraryAssociation.FirstOrDefault(x => x.BookId == json.bookId);
 
@@ -207,7 +209,7 @@ namespace PracticeWebApi.Controllers
                     }
                 }
                 //_context.UserBookAssociation.Remove(uba);
-                _context.SaveChangesAsync();
+                await _context.SaveChangesAsync();
             }
             else
             {

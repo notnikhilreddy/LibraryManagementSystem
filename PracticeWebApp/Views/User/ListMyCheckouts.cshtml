@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "ListMyCheckouts";
+    int index = 1;
 }
 
 <h1>My Checkouts</h1>
@@ -12,6 +13,9 @@
 <table class="table">
     <thead>
         <tr>
+            <th>
+                Index
+            </th>
             <th>
                 @Html.DisplayNameFor(model => model.Title)
             </th>
@@ -33,6 +37,9 @@
     <tbody>
 @foreach (var item in Model) {
         <tr>
+            <td>
+                @(index++)
+            </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Title)
             </td>

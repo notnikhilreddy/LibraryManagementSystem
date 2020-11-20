@@ -8,6 +8,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyModel;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -20,12 +21,15 @@ namespace PracticeWebApp.Controllers
     public class HomeController : Controller
     {
         private HttpClient client = new HttpClient();
+        private IConfiguration Configuration;
 
-        public HomeController()
+        public HomeController(IConfiguration configuration)
         {
+            this.Configuration = configuration;
             var httpClientHandler = new HttpClientHandler { Proxy = WebRequest.GetSystemWebProxy() };
             client = new HttpClient(httpClientHandler);
-            client.BaseAddress = new Uri("https://localhost:44364/");
+            string baseUri = this.Configuration.GetValue<string>("BaseURI");
+            client.BaseAddress = new Uri(baseUri);
             client.DefaultRequestHeaders.Accept.Add(
             new MediaTypeWithQualityHeaderValue("application/json"));
         }
@@ -72,11 +76,11 @@ namespace PracticeWebApp.Controllers
         }
 
         [HttpPost]
-        public IActionResult AddUser(Users user)
+        public async Task<IActionResult> AddUser(Users user)
         {
             string json = JsonConvert.SerializeObject(user);
             var httpContent = new StringContent(json, Encoding.UTF8, "application/json");
-            var httpResponse = client.PostAsync("api/users", httpContent);
+            var httpResponse = await client.PostAsync("api/users", httpContent);
             return RedirectToAction("User");
         }
 

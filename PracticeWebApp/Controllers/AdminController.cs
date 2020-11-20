@@ -12,18 +12,22 @@ using PracticeWebApi.Models;
 using Books = PracticeWebApi.Models.Books;
 using Newtonsoft.Json;
 using System.Text;
+using Microsoft.Extensions.Configuration;
 
 namespace PracticeWebApp.Controllers
 {
     public class AdminController : Controller
     {
         private HttpClient client = new HttpClient();
-        //public static int libraryId;
-        public AdminController()
+        private IConfiguration Configuration;
+
+        public AdminController(IConfiguration configuration)
         {
+            this.Configuration = configuration;
             var httpClientHandler = new HttpClientHandler { Proxy = WebRequest.GetSystemWebProxy() };
             client = new HttpClient(httpClientHandler);
-            client.BaseAddress = new Uri("https://localhost:44364/");
+            string baseUri = this.Configuration.GetValue<string>("BaseURI");
+            client.BaseAddress = new Uri(baseUri);
             client.DefaultRequestHeaders.Accept.Add(
             new MediaTypeWithQualityHeaderValue("application/json"));
         }
@@ -72,19 +76,19 @@ namespace PracticeWebApp.Controllers
         }
 
         [HttpPost]
-        public IActionResult AddBook(Books book) {
+        public async Task<IActionResult> AddBook(Books book) {
             string json = JsonConvert.SerializeObject(book);
             var httpContent = new StringContent(json, Encoding.UTF8, "application/json");
-            var httpResponse = client.PostAsync("api/books/"+Statics.libraryId.ToString(), httpContent);
+            var httpResponse = await client.PostAsync("api/books/"+Statics.libraryId.ToString(), httpContent);
             return RedirectToAction("ListBooks", new libId { id = Statics.libraryId });
         }
 
 
-        public IActionResult ChangeAvailability(BookAvailability bookAvailability)
+        public async Task<IActionResult> ChangeAvailability(BookAvailability bookAvailability)
         {
             string json = JsonConvert.SerializeObject(bookAvailability);
             var httpContent = new StringContent(json, Encoding.UTF8, "application/json");
-            var httpResponse = client.PutAsync("api/booklibraryassociations/update", httpContent);
+            var httpResponse = await client.PutAsync("api/booklibraryassociations/update", httpContent);
             return RedirectToAction("ListBooks", new libId { id = Statics.libraryId });
         }
 

@@ -85,7 +85,7 @@ namespace PracticeWebApi.Controllers
                 DateTime due = (DateTime)_context.UserBookAssociation.FirstOrDefault(i => i.BookLibraryAsscId == blaId).DueDate;
                 bwdd.Add(new BookWithDuedate { BookId = book.BookId, Title = book.Title, Author = book.Author, Price = book.Price, Genre = book.Genre, DueDate = due});
             }
-            bwdd.OrderBy(i => i.DueDate);
+            List<BookWithDuedate> sortedList = bwdd.OrderBy(p => p.DueDate).ToList();
 
             return Ok(bwdd);
         }

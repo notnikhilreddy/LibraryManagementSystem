@@ -11,18 +11,22 @@ using PracticeWebApi.Models;
 using Newtonsoft.Json;
 using System.Text;
 using System.ComponentModel.Design;
+using Microsoft.Extensions.Configuration;
 
 namespace PracticeWebApp.Controllers
 {
     public class UserController : Controller
     {
         private HttpClient client = new HttpClient();
-        //public static int libraryId;
-        public UserController()
+        private IConfiguration Configuration;
+
+        public UserController(IConfiguration configuration)
         {
+            this.Configuration = configuration;
             var httpClientHandler = new HttpClientHandler { Proxy = WebRequest.GetSystemWebProxy() };
             client = new HttpClient(httpClientHandler);
-            client.BaseAddress = new Uri("https://localhost:44364/");
+            string baseUri = this.Configuration.GetValue<string>("BaseURI");
+            client.BaseAddress = new Uri(baseUri);
             client.DefaultRequestHeaders.Accept.Add(
             new MediaTypeWithQualityHeaderValue("application/json"));
         }
@@ -42,7 +46,7 @@ namespace PracticeWebApp.Controllers
             return View(data);
         }
 
-        public IActionResult ListMyCheckouts()
+        public async Task<IActionResult> ListMyCheckouts()
         {
             HttpResponseMessage response = client.
                     GetAsync("api/userbookassociations/mycheckouts/"+Statics.userId.ToString()).Result;
@@ -60,94 +64,20 @@ namespace PracticeWebApp.Controllers
             public int bookId { get; set; }
             public int userId { get; set; }
         }
-        public IActionResult Checkout(BookId bId)
+        public async Task<IActionResult> Checkout(BookId bId)
         {
             string json = JsonConvert.SerializeObject(new CheckoutBook { bookId = bId.bookId, userId = Statics.userId });
             var httpContent = new StringContent(json, Encoding.UTF8, "application/json");
-            var httpResponse = client.PostAsync("api/booklibraryassociations/checkout", httpContent);
+            var httpResponse = await client.PostAsync("api/booklibraryassociations/checkout", httpContent);
             return RedirectToAction("ListBooks", "User", new UserId { id = Statics.userId});
         }
 
-        public IActionResult Return(BookId bId)
+        public async Task<IActionResult> Return(BookId bId)
         {
             string json = JsonConvert.SerializeObject(bId);
             var httpContent = new StringContent(json, Encoding.UTF8, "application/json");
-            var httpResponse = client.PostAsync("api/booklibraryassociations/return", httpContent);
+            var httpResponse = await client.PostAsync("api/booklibraryassociations/return", httpContent);
             return RedirectToAction("ListMyCheckouts", "User");
-        }
-        // GET: HomeController1
-        public ActionResult Index()
-        {
-            return View();
-        }
-
-        // GET: HomeController1/Details/5
-        public ActionResult Details(int id)
-        {
-            return View();
-        }
-
-        // GET: HomeController1/Create
-        public ActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: HomeController1/Create
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
-
-        // GET: HomeController1/Edit/5
-        public ActionResult Edit(int id)
-        {
-            return View();
-        }
-
-        // POST: HomeController1/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
-
-        // GET: HomeController1/Delete/5
-        public ActionResult Delete(int id)
-        {
-            return View();
-        }
-
-        // POST: HomeController1/Delete/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
         }
     }
 }
